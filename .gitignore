@@ -1,0 +1,16 @@
+# compiled python
+*.pyc
+
+# sensitive data
+*settings.py
+
+# temps and backups
+*.json
+*~
+*DEADJOE
+
+*media/
+
+# python virtual environment
+SLMvenv/
+server/.idea
