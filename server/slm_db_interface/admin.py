@@ -15,7 +15,7 @@ class BorrowerAdmin(admin.ModelAdmin):
 
 class BookAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['title', 'author', 'publisher']}),
+        (None, {'fields': ['title', 'author', 'publisher', 'published_year']}),
         ('Identifiers', {'fields': ['isbn10', 'isbn13']}),
         ('Lending/borrowing', {'fields': ['borrow_date', 'return_date']}),
     ]
@@ -35,9 +35,10 @@ class PublisherAdmin(admin.ModelAdmin):
     fields = ['name']
     inlines = [BookInline]
 
-
 admin.site.register(Borrower, BorrowerAdmin)
 admin.site.register(SLMUser)
 admin.site.register(Book, BookAdmin)
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(Publisher, PublisherAdmin)
+
+admin.site.site_header = 'Simple Library Manager Admin Panel'
