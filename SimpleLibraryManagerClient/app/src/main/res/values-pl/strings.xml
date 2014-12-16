@@ -1,0 +1,12 @@
+<resources>
+
+    <string name="action_settings">Ustawienia</string>
+    <string name="app_name">Simple Lib Client</string>
+    <string name="hello_world">Witaj, świecie!</string>
+    <string name="pref_slm_host">Nazwa hosta SLM</string>
+    <string name="pref_slm_host_summ">URL (adres IP lub domena hosta) serwera z bazą danych SLM</string>
+    <string name="title_activity_settings">Ustawienia</string>
+    <string name="btRunBarcode">Uruchom skaner kodów</string>
+    <string name="btSearchGoogle">Wyszukaj w Google Books</string>
+
+</resources>

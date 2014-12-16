@@ -23,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -33,16 +34,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
-    private String ISBN;
+    public static String ISBN;
     private EditText editISBN;
-    private BookInfo[] booksArray;
-    private String dlBookInfo; // downloaded info
+    public static BookInfo[] booksArray;
+    public static String dlBookInfo; // downloaded info
 //    public static String page = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        refreshBookView();
     }
 
     @Override
@@ -61,6 +64,8 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
             return true;
         }
 
@@ -72,8 +77,13 @@ public class MainActivity extends ActionBarActivity {
             if(resultCode == RESULT_OK) {
                 ISBN = data.getStringExtra("SCAN_RESULT");
                 System.out.println(ISBN);
+                refreshBookView();
             }
             else if(resultCode == RESULT_CANCELED) {} // TODO Handle error in reasonable way
+        } else if(requestCode == 1) {
+            if(resultCode == RESULT_OK) {
+                refreshBookView();
+            }
         }
     }
 
@@ -124,9 +134,15 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void BtGoogleSearch(View btView) {
+    public void btGoogleSearch(View btView) {
         booksArray = searchGoogleBooks();
         refreshBookView();
+    }
+
+    public void btLocalSearch(View btView) {
+        Intent i = new Intent(this, DBSearch.class);
+        i.putExtra("ISBN", ISBN);
+        startActivityForResult(i, 1);
     }
 
     private class HttpRequestTask extends AsyncTask<String, Void, String> {
@@ -217,7 +233,7 @@ public class MainActivity extends ActionBarActivity {
     private void refreshBookView() {
         String NL = System.getProperty("line.separator");
         TextView bookListView = (TextView) findViewById(R.id.bookListView);
-        String bookList = "";
+        String bookList = "ISBN: " + ISBN + NL + "______" + NL + NL;
 
         if(booksArray != null && booksArray.length > 0) {
             for (int i = 0; i < booksArray.length; ++i) {
@@ -226,11 +242,13 @@ public class MainActivity extends ActionBarActivity {
                 bookDetails += "author: " + booksArray[i].author + NL;
                 bookDetails += "ISBN10: " + booksArray[i].isbn10 + NL;
                 bookDetails += "ISBN13: " + booksArray[i].isbn13 + NL;
+                if(booksArray[i].similarity != null)
+                    bookDetails += "similarity: " + booksArray[i].similarity.toString() + NL;
 
                 bookList += bookDetails + NL;
             }
         } else {
-            bookList = "No books found!";
+            bookList += "No books found!";
         }
 
         bookListView.setText(bookList);

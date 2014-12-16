@@ -1,0 +1,83 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="silmeth.slm.client.DBSearch">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/ISBN"
+        android:id="@+id/ISBNString"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Space
+        android:layout_width="20px"
+        android:layout_height="1px"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/ISBNString"
+
+        android:id="@+id/ISBNgap"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="New Text"
+        android:id="@+id/ISBNcontent"
+        android:layout_alignParentTop="true"
+        android:editable="true"
+        android:layout_toRightOf="@+id/ISBNgap"
+        android:layout_toEndOf="@+id/ISBNString" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/searchQuery"
+        android:id="@+id/searchPhrase"
+        android:layout_below="@+id/ISBNString"
+        android:layout_alignParentLeft="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/query"
+        android:layout_alignTop="@+id/searchPhrase"
+        android:layout_toRightOf="@+id/searchPhrase"
+        android:layout_toEndOf="@+id/searchPhrase" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btSearchISBN"
+        android:id="@+id/btSearchISBN"
+        android:layout_below="@+id/query"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="btSearchByISBN" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btSearchTitle"
+        android:id="@+id/btSearchTitle"
+        android:layout_alignTop="@+id/btSearchISBN"
+        android:layout_toRightOf="@+id/btSearchISBN"
+        android:layout_toEndOf="@+id/btSearchISBN"
+        android:onClick="btSearchByTitle" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btSearchAuthor"
+        android:id="@+id/btSearchAuthor"
+        android:layout_alignTop="@+id/btSearchTitle"
+        android:layout_toRightOf="@+id/btSearchTitle"
+        android:layout_toEndOf="@+id/btSearchTitle"
+        android:onClick="btSearchByAuthor" />
+</RelativeLayout>

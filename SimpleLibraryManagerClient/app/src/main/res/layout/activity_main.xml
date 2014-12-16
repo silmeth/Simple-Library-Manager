@@ -11,7 +11,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="205dp"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
         android:id="@+id/scrollView"
         android:layout_gravity="center_horizontal"
         android:fillViewport="false">
@@ -26,15 +27,23 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Run barcode"
+        android:hint="@string/btRunBarcode"
         android:onClick="BtBarCode"
         android:id="@+id/btBarCode" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search in Google Books"
-        android:onClick="BtGoogleSearch"
+        android:hint="@string/btSearchGoogle"
+        android:onClick="btGoogleSearch"
         android:id="@+id/btGoogleSearch" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btLocalSearch"
+        android:layout_gravity="center_horizontal"
+        android:hint="@string/btLocalSearch"
+        android:onClick="btLocalSearch" />
 
 </LinearLayout>
