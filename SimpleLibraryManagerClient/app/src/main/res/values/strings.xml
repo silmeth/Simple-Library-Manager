@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Simple Library Manager Client</string>
+    <string name="app_name">Simple Lib Client</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <item name="string_text" type="id">Test value</item>
 </resources>
