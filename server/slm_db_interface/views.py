@@ -1,19 +1,24 @@
-import json
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
 from slm_db_interface.models import Book, Author, Publisher, Borrower, SLMUser
 from bisect import bisect_left  # to do binary search on sorted lists
 import re
+import json
 
 
-def create_books_json(books, additional_dic=None):
+def create_json_from_books(books, additional_dic=None):
     books_list = []
     for i, book in enumerate(books):
         book_dict = {
             'title': book.title,
             'author': book.author.name,
             'isbn10': book.isbn10,
-            'isbn13': book.isbn13
+            'isbn13': book.isbn13,
+            'publisher': book.publisher.name,
+            'pub_date': book.published_year,
+            'book_id': book.id
         }
 
         if additional_dic is not None:  # add additional non-standard fields
@@ -23,6 +28,42 @@ def create_books_json(books, additional_dic=None):
         books_list.append(book_dict)
 
     return json.JSONEncoder(indent=2, ensure_ascii=False).encode(books_list)
+
+
+def create_book_from_json(json_obj):
+    book = None
+    with transaction.atomic():
+        json_decoded = json.JSONDecoder().decode(json_obj)
+        if 'author' in json_decoded and json_decoded['author'] is None:
+            book_author = None
+        elif 'author_new' in json_decoded and json_decoded['author_new']:
+            book_author = Author(name=json_decoded['author_name'])
+            book_author.save()
+        elif 'author_id' in json_decoded:
+            book_author = Author.objects.get(id=json_decoded['author_id'])
+
+        if 'publisher' in json_decoded and json_decoded['publisher'] is None:
+            book_publisher = None
+        elif 'publisher_new' in json_decoded and json_decoded['publisher_new']:
+            book_publisher = Publisher(name=json_decoded['publisher_name'])
+            book_publisher.save()
+        elif 'publisher_id' in json_decoded:
+            book_publisher = Publisher.objects.get(id=json_decoded['publisher_id'])
+
+        if 'title' not in json_decoded:
+            return None
+        book = Book(title=json_decoded['title'], author=book_author, publisher=book_publisher,
+                    borrower=None, borrow_date=None, return_date=None)
+
+        if 'isbn10' in json_decoded:
+            book.isbn10=json_decoded['isbn10']
+        if 'isbn13' in json_decoded:
+            book.isbn13=json_decoded['isbn13']
+        if 'pub_date' in json_decoded:
+            book.published_year=json_decoded['pub_date']
+        book.save()
+
+    return book
 
 
 def create_3grams(s):
@@ -52,7 +93,7 @@ def get_books_by_isbn(request, isbn):
         results = Book.objects.filter(isbn10=sisbn)
     elif len(sisbn) == 13:
         results = Book.objects.filter(isbn13=sisbn)
-    return HttpResponse(content=create_books_json(results), content_type='application/json; charset=utf-8')
+    return HttpResponse(content=create_json_from_books(results), content_type='application/json; charset=utf-8')
 
 
 def search(request, attr, attr_val):
@@ -85,5 +126,90 @@ def search(request, attr, attr_val):
     for sim in similarities:
         sim_dic_list.append({'similarity': sim})
 
-    return HttpResponse(content=create_books_json(results[::-1], sim_dic_list[::-1]),
+    return HttpResponse(content=create_json_from_books(results[::-1], sim_dic_list[::-1]),
                         content_type='application/json; charset=utf-8')
+
+
+def search_authors(request, name):
+    regexp_whitespace = re.compile('\s+')
+    regexp_punctuation = re.compile('[^\w\s]+')
+
+    name = regexp_whitespace.sub(' ', name.lower())
+    name = regexp_punctuation.sub('', name)
+
+    query_3grams = create_3grams(name)
+    results = []
+    similarities = []
+
+    for author in Author.objects.all():
+        result = author.name.lower()
+
+        result = regexp_whitespace.sub(' ', result)
+        result = regexp_punctuation.sub('', result)
+        result_3grams = create_3grams(result)
+        similarity = compare_3grams(query_3grams, result_3grams)
+        if similarity > 0.21:
+            pos = bisect_left(similarities, similarity, 0, len(similarities))
+            results.insert(pos, author)
+            similarities.insert(pos, similarity)
+
+    results = results[::-1]
+    similarities = similarities[::-1]
+    json_results_list = []
+
+    for i, res in enumerate(results):
+        json_results_list.append({'name': res.name, 'id': res.id, 'similarity': similarities[i]})
+
+    json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
+
+    return HttpResponse(content=json_results,
+                        content_type='application/json; charset=utf-8')
+
+def search_publishers(request, name):
+    regexp_whitespace = re.compile('\s+')
+    regexp_punctuation = re.compile('[^\w\s]+')
+
+    name = regexp_whitespace.sub(' ', name.lower())
+    name = regexp_punctuation.sub('', name)
+
+    query_3grams = create_3grams(name)
+    results = []
+    similarities = []
+
+    for publisher in Publisher.objects.all():
+        result = publisher.name.lower()
+
+        result = regexp_whitespace.sub(' ', result)
+        result = regexp_punctuation.sub('', result)
+        result_3grams = create_3grams(result)
+        similarity = compare_3grams(query_3grams, result_3grams)
+        if similarity > 0.21:
+            pos = bisect_left(similarities, similarity, 0, len(similarities))
+            results.insert(pos, publisher)
+            similarities.insert(pos, similarity)
+
+    results = results[::-1]
+    similarities = similarities[::-1]
+    json_results_list = []
+
+    for i, res in enumerate(results):
+        json_results_list.append({'name': res.name, 'id': res.id, 'similarity': similarities[i]})
+
+    json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
+
+    return HttpResponse(content=json_results,
+                        content_type='application/json; charset=utf-8')
+
+
+@csrf_exempt
+def add_book(request):
+    # book data comes in json through a POST request
+    if request.method == 'POST':
+        try:
+            book = create_book_from_json(request.body.decode('utf8'))
+            return HttpResponse(content=create_json_from_books([book]),
+                                content_type='application/json; charset=utf-8')
+        except ValueError:
+            return HttpResponse(content='request not a valid json', content_type='text/plain')
+    else:
+        return HttpResponse(content='something went wrong', content_type='text/plain')
