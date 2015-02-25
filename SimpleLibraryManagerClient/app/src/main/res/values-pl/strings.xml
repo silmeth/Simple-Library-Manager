@@ -8,5 +8,22 @@
     <string name="title_activity_settings">Ustawienia</string>
     <string name="btRunBarcode">Uruchom skaner kodów</string>
     <string name="btSearchGoogle">Wyszukaj w Google Books</string>
+    <string name="btAddBook">Dodaj nową książkę</string>
+    <string name="btLocalSearch">Wyszukaj w bazie SLM</string>
+    <string name="btSearchAuthor">wg autora</string>
+    <string name="btSearchISBN">wg nr. ISBN</string>
+    <string name="btSearchTitle">wg tytułu</string>
+    <string name="searchQuery">Zapytanie</string>
+    <string name="title_activity_dbsearch">Wyszukiwarka bazy SLM</string>
+    <string name="ISBN10">ISBN10 (10 cyfr)</string>
+    <string name="ISBN13">ISBN13 (13 cyfr)</string>
+    <string name="bookAuthor">Autor książki</string>
+    <string name="bookPubYear">Rok wydania</string>
+    <string name="bookPublisher">Wydawnictwo</string>
+    <string name="bookTitle">Tytuł książki</string>
+    <string name="entNewAuthor">Wprowadź nowego autora</string>
+    <string name="entNewPublisher">Wprowadź nowe wydawnictwo</string>
+    <string name="entNewTitle">Wprowadź nowy tytuł</string>
+    <string name="btConfirm">Zatwierdź</string>
 
 </resources>

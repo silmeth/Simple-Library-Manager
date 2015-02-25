@@ -29,6 +29,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="silmeth.slm.client.MainActivity" />
         </activity>
+        <activity android:name=".AddBook"
+            android:label="Add new book" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="silmeth.slm.client.MainActivity" />
+            </activity>
     </application>
 
 </manifest>

@@ -8,21 +8,26 @@ public class BookInfo {
     public String author;
     public String isbn10;
     public String isbn13;
+    public String publisher;
+    public int id;
     public Float similarity;
+    public String pubYear;
 
     BookInfo(String titleStr, String authorStr, String isbn10Str, String isbn13Str) {
-        title = new String(titleStr);
-        isbn10 = new String(isbn10Str);
-        isbn13 = new String(isbn13Str);
-        author = new String(authorStr);
+        title = titleStr;
+        isbn10 = isbn10Str;
+        isbn13 = isbn13Str;
+        author = authorStr;
         similarity = null;
     }
 
     BookInfo() {
-        title = new String();
-        isbn10 = new String();
-        isbn13 = new String();
-        author = new String();
+        title = null;
+        isbn10 = null;
+        isbn13 = null;
+        author = null;
+        publisher = null;
         similarity = null;
+        pubYear = null;
     }
 }

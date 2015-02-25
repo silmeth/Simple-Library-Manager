@@ -23,8 +23,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 
 public class DBSearch extends ActionBarActivity {
@@ -47,6 +49,7 @@ public class DBSearch extends ActionBarActivity {
         ISBNView = (TextView) findViewById(R.id.ISBNcontent);
         ISBNView.setText(getIntent().getExtras().getString("ISBN"));
         queryView = (EditText) findViewById(R.id.query);
+        queryView.setText(ISBNView.getText());
     }
 
 
@@ -72,9 +75,15 @@ public class DBSearch extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // TODO: redundant search functions
     public void btSearchByISBN(View btView) {
         BookInfo[] results = null;
-        String ISBN = ISBNView.getText().toString();
+        String ISBN = null;
+        try {
+            ISBN = URLEncoder.encode(queryView.getText().toString(), "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         assert(ISBN != null);
         HttpRequestTask httpReqTask = new HttpRequestTask();
         httpReqTask.execute("http://" + localHostName + ":8000/webs/get_books/isbn/" + ISBN);
@@ -106,7 +115,12 @@ public class DBSearch extends ActionBarActivity {
 
     public void btSearchByTitle(View btView) {
         BookInfo[] results = null;
-        String query = queryView.getText().toString();
+        String query = null;
+        try {
+            query = URLEncoder.encode(queryView.getText().toString(), "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace(); // TODO more reasonable exception handling
+        }
         assert(query != null);
         HttpRequestTask httpReqTask = new HttpRequestTask();
         httpReqTask.execute("http://" + localHostName + ":8000/webs/search/title=" + query);
@@ -139,7 +153,12 @@ public class DBSearch extends ActionBarActivity {
 
     public void btSearchByAuthor(View btView) {
         BookInfo[] results = null;
-        String query = queryView.getText().toString();
+        String query = null;
+        try {
+            query = URLEncoder.encode(queryView.getText().toString(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         assert(query != null);
         HttpRequestTask httpReqTask = new HttpRequestTask();
         httpReqTask.execute("http://" + localHostName + ":8000/webs/search/author=" + query);

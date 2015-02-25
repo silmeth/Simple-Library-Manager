@@ -7,19 +7,32 @@
     <string name="btSearchGoogle">Search in Google Books</string>
     <string name="btRunBarcode">Run Barcode Scanner</string>
 
+    <string name="bookTitle">Book title</string>
+    <string name="bookAuthor">Book author</string>
+    <string name="bookPublisher">Publisher</string>
+    <string name="ISBN10">ISBN10 (10 digits)</string>
+    <string name="ISBN13">ISBN13 (13 digits)</string>
+    <string name="bookPubYear">Publication year</string>
+
+    <string name="entNewTitle">Enter new title</string>
+    <string name="entNewAuthor">Enter new author</string>
+    <string name="entNewPublisher">Enter new publisher</string>
+
     <item name="string_text" type="id">Test value</item>
 
     <string name="pref_slm_host">Simple Library Manager hostname</string>
     <string name="pref_slm_host_summ">URL (IP address or hostname) of a server providing SLM database.</string>
-    <string name="pref_slm_host_default">192.168.2.130</string>
+    <string name="pref_slm_host_default" translatable="false">192.168.2.130</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_dbsearch">Search SLM database</string>
 
-    <string name="ISBN">ISBN: </string>
+    <string name="ISBN" translatable="false">ISBN: </string>
     <string name="searchQuery">Query: </string>
     <string name="btSearchISBN">by ISBN</string>
     <string name="btSearchTitle">by Title</string>
     <string name="btSearchAuthor">by Author</string>
     <string name="btLocalSearch">Search in SLM database</string>
+    <string name="btAddBook">Add new book</string>
+    <string name="btConfirm">Confirm</string>
 
 </resources>

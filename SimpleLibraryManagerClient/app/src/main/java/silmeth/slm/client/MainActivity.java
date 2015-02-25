@@ -3,15 +3,16 @@ package silmeth.slm.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
@@ -34,16 +36,26 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends ActionBarActivity {
+    public final int barScanId = 0;
+    public final int localSearchId = 1;
+    public final int addBookId = 2;
+
     public static String ISBN;
     private EditText editISBN;
     public static BookInfo[] booksArray;
     public static String dlBookInfo; // downloaded info
+    private SharedPreferences sharedPref;
+    private String localHostName;
 //    public static String page = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        localHostName = sharedPref.getString("pref_slm_host", "");
+
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         refreshBookView();
     }
@@ -73,14 +85,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == 0) { // ZXing Barcode Scanner Activity
+        if(requestCode == barScanId) { // ZXing Barcode Scanner Activity
             if(resultCode == RESULT_OK) {
                 ISBN = data.getStringExtra("SCAN_RESULT");
                 System.out.println(ISBN);
                 refreshBookView();
             }
             else if(resultCode == RESULT_CANCELED) {} // TODO Handle error in reasonable way
-        } else if(requestCode == 1) {
+        } else if(requestCode == localSearchId) {
             if(resultCode == RESULT_OK) {
                 refreshBookView();
             }
@@ -130,7 +142,7 @@ public class MainActivity extends ActionBarActivity {
         // if everything OK, run scanner
         if(bcScannerInstalled) {
             barScanInt.putExtra("SCAN_FORMATS", "EAN_13");
-            startActivityForResult(barScanInt, 0);
+            startActivityForResult(barScanInt, barScanId);
         }
     }
 
@@ -142,7 +154,41 @@ public class MainActivity extends ActionBarActivity {
     public void btLocalSearch(View btView) {
         Intent i = new Intent(this, DBSearch.class);
         i.putExtra("ISBN", ISBN);
-        startActivityForResult(i, 1);
+        startActivityForResult(i, localSearchId);
+    }
+
+    public void btAddBook(View btView) {
+        Intent i = new Intent(this, AddBook.class);
+        if(booksArray.length > 0) {
+            if(booksArray[0].title != null) {
+                i.putExtra("titleSearch", searchTitles());
+                i.putExtra("title", booksArray[0].title);
+            }
+            if(booksArray[0].author != null) {
+                i.putExtra("authorSearch", searchAuthors());
+                i.putExtra("author", booksArray[0].author);
+            }
+            if(booksArray[0].publisher != null) {
+                i.putExtra("publisherSearch", searchPublishers());
+                i.putExtra("publisher", booksArray[0].publisher);
+            }
+            if(booksArray[0].pubYear != null) {
+                i.putExtra("pubYear", booksArray[0].pubYear);
+            }
+
+            if(booksArray[0].isbn10 != null) {
+                i.putExtra("ISBN10", booksArray[0].isbn10);
+            } else if(ISBN != null && ISBN.length() == 10) {
+                i.putExtra("ISBN10", ISBN);
+            }
+
+            if(booksArray[0].isbn13 != null) {
+                i.putExtra("ISBN13", booksArray[0].isbn13);
+            } else if(ISBN != null && ISBN.length() == 13) {
+                i.putExtra("ISBN13", ISBN);
+            }
+        }
+        startActivityForResult(i, addBookId);
     }
 
     private class HttpRequestTask extends AsyncTask<String, Void, String> {
@@ -186,8 +232,16 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    // TODO: get rid of all the redundant search functions
+    // This should (almost?) always return only one entry:
+    // there should exist only one book with given ISBN in the world.
     private BookInfo[] searchGoogleBooks() {
         BookInfo[] results = null;
+        try {
+            ISBN = URLEncoder.encode(ISBN, "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         assert(ISBN != null);
         HttpRequestTask httpReqTask = new HttpRequestTask();
         httpReqTask.execute("https://www.googleapis.com/books/v1/volumes?q=isbn:" + ISBN);
@@ -222,12 +276,82 @@ public class MainActivity extends ActionBarActivity {
                 }
                 results[i].isbn10 = isbn10;
                 results[i].isbn13 = isbn13;
+
+                String[] dateArray = book.getString("publishedDate").split("-");
+                if(dateArray.length > 0) {
+                    results[i].pubYear = dateArray[0];
+                }
             }
         } catch(JSONException e) {
             e.printStackTrace(); // TODO more reasonable exception handling
         }
 
         return results;
+    }
+
+    // TODO: redundant search
+    // Using first found book if found by Google Books
+    public String searchAuthors() {
+        String query = null;
+        if(booksArray.length > 0) {
+            query = booksArray[0].author;
+        }
+        try {
+            query = URLEncoder.encode(query, "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        assert(query != null);
+        HttpRequestTask httpReqTask = new HttpRequestTask();
+        httpReqTask.execute("http://" + localHostName + ":8000/webs/search_authors/" + query);
+        while(!httpReqTask.complete) {
+
+        }
+        return dlBookInfo; // return JSON string with listed authors, their ids and similarities
+    }
+
+    // TODO: redundant search
+    // Using first found book if found by Google Books
+    public String searchPublishers() {
+        String query = null;
+        if(booksArray.length > 0) {
+            query = booksArray[0].publisher;
+        }
+        try {
+            query = URLEncoder.encode(query, "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        assert(query != null);
+        HttpRequestTask httpReqTask = new HttpRequestTask();
+        httpReqTask.execute("http://" + localHostName + ":8000/webs/search_publishers/" + query);
+        while(!httpReqTask.complete) {
+
+        }
+        return dlBookInfo; // return JSON string with listed publishers, their ids and similarities
+    }
+
+    // TODO: redundant search
+    // Using first found book if found by Google Books
+    public String searchTitles() {
+        String query = null;
+        BookInfo[] results = null;
+        if(booksArray.length > 0) {
+            query = booksArray[0].title;
+        }
+        try {
+            query = URLEncoder.encode(query, "UTF-8");
+        } catch(UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        assert(query != null);
+        HttpRequestTask httpReqTask = new HttpRequestTask();
+        httpReqTask.execute("http://" + localHostName + ":8000/webs/search/title=" + query);
+        while(!httpReqTask.complete) {
+
+        }
+
+        return dlBookInfo;
     }
 
     private void refreshBookView() {
