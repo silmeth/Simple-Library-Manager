@@ -7,10 +7,10 @@ class Borrower(models.Model):
     Borrower's data, used to
     """
     id = models.AutoField(db_column='borrower_id', primary_key=True)
-    nick = models.CharField(max_length=40, blank=True)
-    name = models.CharField(max_length=40, blank=False)
-    surname = models.CharField(max_length=40, blank=True)
-    email = models.EmailField(null=False)
+    nick = models.CharField(max_length=40, blank=True, null=False)
+    name = models.CharField(max_length=40, blank=False, null=False)
+    surname = models.CharField(max_length=40, blank=True, null=False)
+    email = models.EmailField(blank=False, null=False)
 
     def __str__(self):
         res = str(self.name)
@@ -31,8 +31,8 @@ class SLMUser(models.Model):
     """
     id = models.AutoField(db_column='slm_user_id', primary_key=True)
     django_user = models.OneToOneField(User, db_column='django_user_id')  # system uses Django authentication
-    borrower = models.OneToOneField(Borrower, db_column='borrower_id', null=False)  # user has to have
-                                                                                    # appropriate borrower
+    borrower = models.OneToOneField(Borrower, db_column='borrower_id', blank=False, null=True)  # user has to have
+                                                                                                # appropriate borrower
     can_borrow = models.BooleanField(default=True)
     can_lend = models.BooleanField(default=False)
     can_manage_books = models.BooleanField(default=False)
@@ -47,7 +47,7 @@ class SLMUser(models.Model):
 
 class Author(models.Model):
     id = models.AutoField(db_column='author_id', primary_key=True)
-    name = models.CharField(max_length=100, db_index=True, null=False, unique=False)
+    name = models.CharField(max_length=100, db_index=True, blank=False, null=False, unique=False)
 
     def __str__(self):
         return str(self.name)
@@ -58,7 +58,7 @@ class Author(models.Model):
 
 class Publisher(models.Model):
     id = models.AutoField(db_column='publisher_id', primary_key=True)
-    name = models.CharField(max_length=100, db_index=True, null=False, unique=False)
+    name = models.CharField(max_length=100, db_index=True, blank=False, null=False, unique=False)
 
     def __str__(self):
         return str(self.name)
