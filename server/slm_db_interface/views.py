@@ -14,9 +14,11 @@ def create_json_from_books(books, additional_dic=None):
         book_dict = {
             'title': book.title,
             'author': book.author.name,
+            'author_id': book.author.id,
             'isbn10': book.isbn10,
             'isbn13': book.isbn13,
             'publisher': book.publisher.name,
+            'publisher_id': book.publisher.id,
             'pub_date': book.published_year,
             'book_id': book.id
         }
@@ -32,10 +34,12 @@ def create_json_from_books(books, additional_dic=None):
 
 def create_book_from_json(json_obj):
     book = None
+    book_author = None
+    book_publisher = None
     with transaction.atomic():
         json_decoded = json.JSONDecoder().decode(json_obj)
         if 'author' in json_decoded and json_decoded['author'] is None:
-            book_author = None
+            return None
         elif 'author_new' in json_decoded and json_decoded['author_new']:
             book_author = Author(name=json_decoded['author_name'])
             book_author.save()
@@ -43,7 +47,7 @@ def create_book_from_json(json_obj):
             book_author = Author.objects.get(id=json_decoded['author_id'])
 
         if 'publisher' in json_decoded and json_decoded['publisher'] is None:
-            book_publisher = None
+            return None
         elif 'publisher_new' in json_decoded and json_decoded['publisher_new']:
             book_publisher = Publisher(name=json_decoded['publisher_name'])
             book_publisher.save()
@@ -89,6 +93,7 @@ def compare_3grams(first, second):  # Jaccard's similarity
 
 def get_books_by_isbn(request, isbn):
     sisbn = str(isbn)
+    results = None
     if len(sisbn) == 10:
         results = Book.objects.filter(isbn10=sisbn)
     elif len(sisbn) == 13:
@@ -158,7 +163,7 @@ def search_authors(request, name):
     json_results_list = []
 
     for i, res in enumerate(results):
-        json_results_list.append({'name': res.name, 'id': res.id, 'similarity': similarities[i]})
+        json_results_list.append({'name': res.name, 'author_id': res.id, 'similarity': similarities[i]})
 
     json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
 
@@ -193,7 +198,7 @@ def search_publishers(request, name):
     json_results_list = []
 
     for i, res in enumerate(results):
-        json_results_list.append({'name': res.name, 'id': res.id, 'similarity': similarities[i]})
+        json_results_list.append({'name': res.name, 'publisher_id': res.id, 'similarity': similarities[i]})
 
     json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
 
