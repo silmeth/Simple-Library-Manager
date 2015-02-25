@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
 from slm_db_interface.models import Book, Author, Publisher, Borrower, SLMUser
 from bisect import bisect_left  # to do binary search on sorted lists
 import re
@@ -218,3 +219,21 @@ def add_book(request):
             return HttpResponse(content='request not a valid json', content_type='text/plain')
     else:
         return HttpResponse(content='something went wrong', content_type='text/plain')
+
+@csrf_exempt
+def log_user_in(request):
+    if request.method == 'POST':
+        try:
+            credentials = json.JSONDecoder().decode(request.body.decode('utf8'))
+            user = authenticate(username=credentials['username'], password=credentials['password'])
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponse(content='login successful\nlogged as ' + str(user), content_type='text/plain')
+                else:
+                    return HttpResponse(content='user inactive', content_type='text/plain')
+            else:
+                return HttpResponse(content='wrong credentials', content_type='text/plain')
+        except ValueError:
+            return HttpResponse(content='request not a valid json', content_type='text/plain')
+
