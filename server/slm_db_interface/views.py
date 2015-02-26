@@ -116,8 +116,10 @@ def search(request, attr, attr_val): # no login required ATM, may change
     for book in Book.objects.all():
         if attr == 'title':
             book_attr_val = book.title.lower()
-        if attr == 'author':
+        elif attr == 'author':
             book_attr_val = book.author.name.lower()
+        else:
+            return HttpResponse(content='cannot search by this attribute', status=404)
 
         book_attr_val = regexp_whitespace.sub(' ', book_attr_val)
         book_attr_val = regexp_punctuation.sub('', book_attr_val)
@@ -172,7 +174,8 @@ def search_authors(request, name):
         return HttpResponse(content=json_results,
                             content_type='application/json; charset=utf-8')
     else:
-        return HttpResponse(content='error: not authenticated', content_type='text/plain') # TODO change to error dict
+        return HttpResponse(content='error: not authenticated', content_type='text/plain')  # TODO change to error dict
+
 
 def search_publishers(request, name):
     if request.user.is_authenticated():
@@ -212,6 +215,7 @@ def search_publishers(request, name):
     else:
         return HttpResponse(content='error: not authenticated', content_type='text/plain')
 
+
 @csrf_exempt
 def add_book(request):
     if request.user.is_authenticated():
@@ -223,14 +227,18 @@ def add_book(request):
                     book = create_book_from_json(request.body.decode('utf8'))
                     return HttpResponse(content=create_json_from_books([book]),
                                         content_type='application/json; charset=utf-8')
-                except ValueError as err: # TODO change to error dict
-                    return HttpResponse(content='error: request not a valid json\n' + str(err), content_type='text/plain')
+                except ValueError as err:  # TODO change to error dict
+                    return HttpResponse(
+                        content='error: request not a valid json\n' + str(err),
+                        content_type='text/plain'
+                    )
             else:
                 return HttpResponse(content='error: something went wrong', content_type='text/plain')
         else:
             return HttpResponse(content='error: lack of manage book permission')
     else:
         return HttpResponse(content='error: not authenticated', content_type='text/plain')
+
 
 @csrf_exempt
 def log_user_in(request):
@@ -251,7 +259,7 @@ def log_user_in(request):
                         resp_json['can_borrow'] = True
                     resp = json.JSONEncoder(indent=2, ensure_ascii=False).encode(resp_json)
                     return HttpResponse(content=resp, content_type='application/json; charset=utf-8')
-                else: # TODO change to error dict
+                else:  # TODO change to error dict
                     return HttpResponse(content='error: user inactive', content_type='text/plain')
             else:
                 return HttpResponse(content='error: wrong credentials', content_type='text/plain')

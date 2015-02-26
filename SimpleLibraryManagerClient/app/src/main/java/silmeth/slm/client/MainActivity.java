@@ -1,18 +1,11 @@
 package silmeth.slm.client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.client.methods.HttpGet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +17,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -47,7 +39,8 @@ public class MainActivity extends ActionBarActivity {
     public static String dlBookInfo; // downloaded info
 
     private SharedPreferences sharedPref;
-    private String localHostName;
+    private String SLMHostName;
+    private String SLMPort;
     private Boolean loggedIn;
     private String sessionCookie;
 //    public static String page = null;
@@ -58,7 +51,8 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        localHostName = sharedPref.getString("pref_slm_host", "");
+        SLMHostName = sharedPref.getString("pref_slm_host", "");
+        SLMPort = sharedPref.getString("pref_slm_host_port", "");
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         refreshBookView();
@@ -173,6 +167,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void btAddBook(View btView) {
         Intent i = new Intent(this, AddBook.class);
+        i.putExtra("empty", "");
         if(booksArray != null && booksArray.length > 0) {
             if(booksArray[0].title != null) {
                 i.putExtra("titleSearch", searchTitles());
@@ -216,50 +211,6 @@ public class MainActivity extends ActionBarActivity {
         startActivityForResult(loginInt, loginId);
     }
 
-    private class HttpRequestTask extends AsyncTask<String, Void, String> {
-        public boolean complete = false;
-
-        @Override
-        protected String doInBackground(String... urls) {
-            complete = false;
-            String url = null;
-            if(urls.length > 0) url = urls[0];
-            String result = null;
-            try {
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpGet request = new HttpGet();
-                request.setURI(new URI(url));
-                if(url.contains(localHostName)) {
-                    request.setHeader("Cookie", sessionCookie);
-                }
-                HttpResponse response = httpClient.execute(request);
-
-                BufferedReader buff = new BufferedReader(
-                        new InputStreamReader(response.getEntity().getContent())
-                );
-                StringBuffer sbuff = new StringBuffer("");
-
-                String line;
-
-                String NL = System.getProperty("line.separator");
-
-                while ((line = buff.readLine()) != null) {
-                    sbuff.append(line); sbuff.append(NL);
-                }
-
-                buff.close();
-
-                result = sbuff.toString();
-
-            } catch (URISyntaxException | IOException e) {
-                e.printStackTrace(); // TODO more reasonable exception handling
-            }
-            dlBookInfo = result;
-            complete = true;
-            return dlBookInfo;
-        }
-    }
-
     // TODO: get rid of all the redundant search functions
     // This should (almost?) always return only one entry:
     // there should exist only one book with given ISBN in the world.
@@ -271,12 +222,30 @@ public class MainActivity extends ActionBarActivity {
             e.printStackTrace();
         }
         assert(ISBN != null);
-        HttpRequestTask httpReqTask = new HttpRequestTask();
-        httpReqTask.execute("https://www.googleapis.com/books/v1/volumes?q=isbn:" + ISBN);
-        while(!httpReqTask.complete) {
 
+        HttpGetRequestTask httpReqTask = new HttpGetRequestTask();
+
+        Object[] result = {null, null};
+        try {
+            result = httpReqTask.execute(
+                    "https://www.googleapis.com/books/v1/volumes?q=isbn:" + ISBN,
+                    ""
+            ).get(2, TimeUnit.SECONDS);
+        } catch(InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } catch(TimeoutException e) {
+            httpReqTask.cancel(true);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setCancelable(true);
+            alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
+            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.create().show();
+            e.printStackTrace();
+            return null;
         }
-        String page = dlBookInfo;
+
+        String page = (String) result[httpReqTask.respStr];
+
         if(page == null) return null;
         try {
             JSONObject jsonObj = new JSONObject(page);
@@ -317,69 +286,63 @@ public class MainActivity extends ActionBarActivity {
         return results;
     }
 
-    // TODO: redundant search
     // Using first found book if found by Google Books
     public String searchAuthors() {
-        String query = null;
         if(booksArray.length > 0) {
-            query = booksArray[0].author;
+            return search(booksArray[0].author, "_authors/");
+        } else {
+            return "[ ]"; // empty JSONArray
         }
-        try {
-            query = URLEncoder.encode(query, "UTF-8");
-        } catch(UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        assert(query != null);
-        HttpRequestTask httpReqTask = new HttpRequestTask();
-        httpReqTask.execute("http://" + localHostName + ":8000/webs/search_authors/" + query);
-        while(!httpReqTask.complete) {
-
-        }
-        return dlBookInfo; // return JSON string with listed authors, their ids and similarities
     }
 
-    // TODO: redundant search
     // Using first found book if found by Google Books
     public String searchPublishers() {
-        String query = null;
         if(booksArray.length > 0) {
-            query = booksArray[0].publisher;
+            return search(booksArray[0].publisher, "_publishers/");
+        } else {
+            return "[ ]";
         }
-        try {
-            query = URLEncoder.encode(query, "UTF-8");
-        } catch(UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        assert(query != null);
-        HttpRequestTask httpReqTask = new HttpRequestTask();
-        httpReqTask.execute("http://" + localHostName + ":8000/webs/search_publishers/" + query);
-        while(!httpReqTask.complete) {
-
-        }
-        return dlBookInfo; // return JSON string with listed publishers, their ids and similarities
     }
 
-    // TODO: redundant search
     // Using first found book if found by Google Books
     public String searchTitles() {
-        String query = null;
-        BookInfo[] results = null;
         if(booksArray.length > 0) {
-            query = booksArray[0].title;
+            return search(booksArray[0].title, "/title=");
+        } else {
+            return "[ ]"; // empty JSONArray
         }
+    }
+
+    private String search(String query, String what) {
         try {
             query = URLEncoder.encode(query, "UTF-8");
+            what = URLEncoder.encode(what, "UTF-8");
         } catch(UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         assert(query != null);
-        HttpRequestTask httpReqTask = new HttpRequestTask();
-        httpReqTask.execute("http://" + localHostName + ":8000/webs/search/title=" + query);
-        while(!httpReqTask.complete) {
+        HttpGetRequestTask httpReqTask = new HttpGetRequestTask();
 
+        Object[] result = {null, null};
+        try {
+            result = httpReqTask.execute(
+                    "http://" + SLMHostName + ":" + SLMPort + "/webs/search" + what + query,
+                    sessionCookie
+            ).get(2, TimeUnit.SECONDS);
+        } catch(InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } catch(TimeoutException e) {
+            httpReqTask.cancel(true);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setCancelable(true);
+            alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
+            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.create().show();
+            e.printStackTrace();
+            return null;
         }
 
-        return dlBookInfo;
+        return (String) result[httpReqTask.respStr];
     }
 
     private void refreshBookView() {

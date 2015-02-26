@@ -92,6 +92,11 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
         String booksJsonStr = extras.getString("books");
         try {
             JSONArray booksJsonArray = new JSONArray(booksJsonStr);
+            if(booksJsonArray.length() == 0) {
+                setResult(RESULT_CANCELED);
+                finish();
+            }
+
             for(int i = 0; i < booksJsonArray.length(); ++i) {
                 JSONObject bookJson = booksJsonArray.getJSONObject(i);
                 titlesList.add(bookJson.getString("title"));
@@ -102,7 +107,12 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
                 publisherIdsList.add(bookJson.getInt("publisher_id"));
                 ISBN10List.add(bookJson.getString("isbn10"));
                 ISBN13List.add(bookJson.getString("isbn13"));
-                pubYearList.add(bookJson.getInt("pub_date"));
+                try {
+                    pubYearList.add(bookJson.getInt("pub_date"));
+                } catch(JSONException e) {
+                    pubYearList.add(null);
+                    e.printStackTrace();
+                }
                 try {
                     similaritiesList.add(new Float(bookJson.getDouble("similarity")));
                 } catch(JSONException e) {

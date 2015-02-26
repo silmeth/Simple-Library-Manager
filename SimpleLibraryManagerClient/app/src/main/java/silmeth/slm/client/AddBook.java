@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -17,22 +16,15 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Created by silmeth on 09.02.15.
@@ -170,9 +162,17 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             }
         }
 
+        // If given title is not among those in SLM db, add is as a second one to the list,
+        // if there was no title found in SLM db, add given title as first (and only) position.
+        // Same with other lists.
         if(titleStr != null && !titlesList.contains(titleStr)) {
-            titlesList.add(1, titleStr);
-            titlesIdList.add(1, unknownItem);
+            if(titlesList.size() > 0 && titlesIdList.size() > 0) {
+                titlesList.add(1, titleStr);
+                titlesIdList.add(1, unknownItem);
+            } else {
+                titlesList.add(0, titleStr);
+                titlesIdList.add(0, unknownItem);
+            }
         }
 
         titlesList.add(getString(R.string.entNewTitle));
@@ -194,9 +194,15 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             }
         }
 
+        // Cf. titlesList
         if(authorStr != null && !authorsList.contains(authorStr)) {
-            authorsList.add(1, authorStr);
-            authorsIdList.add(1, unknownItem);
+            if(authorsList.size() > 0 && authorsIdList.size() > 0) {
+                authorsList.add(1, authorStr);
+                authorsIdList.add(1, unknownItem);
+            } else {
+                authorsList.add(0, authorStr);
+                authorsIdList.add(0, unknownItem);
+            }
         }
 
         authorsList.add(getString(R.string.entNewAuthor));
@@ -219,9 +225,15 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             }
         }
 
+        // cf. titlesList
         if(publisherStr != null && !publishersList.contains(publisherStr)) {
-            publishersList.add(1, publisherStr);
-            publishersIdList.add(1, unknownItem);
+            if(publishersList.size() > 0 && publishersIdList.size() > 0) {
+                publishersList.add(1, publisherStr);
+                publishersIdList.add(1, unknownItem);
+            } else {
+                publishersList.add(0, publisherStr);
+                publishersIdList.add(0, unknownItem);
+            }
         }
 
         publishersList.add(getString(R.string.entNewPublisher));
@@ -379,12 +391,28 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
                 newBook.put("pub_date", pubYear.intValue());
             }
 
-            HttpRequestTask httpReqTask = new HttpRequestTask();
-            httpReqTask.execute("http://" + SLMHostName + ":" + SLMPort + "/webs/add_book");
-
-            while(!httpReqTask.complete) {
+            HttpPostRequestTask httpReqTask = new HttpPostRequestTask();
+            Object[] result = new Object[2];
+            try {
+                result = httpReqTask.execute(
+                        "http://" + SLMHostName + ":" + SLMPort + "/webs/add_book",
+                        newBook.toString(),
+                        sessionCookie,
+                        "application/json; charset=utf-8"
+                ).get(2, TimeUnit.SECONDS);
+            } catch(InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            } catch(TimeoutException e) {
+                httpReqTask.cancel(true);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+                alertDialogBuilder.setCancelable(true);
+                alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
+                alertDialogBuilder.setMessage("Placeholder");
+                alertDialogBuilder.create().show();
+                e.printStackTrace();
 
             }
+            httpReqRes = (String) result[httpReqTask.respStr];
         } catch(JSONException e) {
             e.printStackTrace(); // TODO better exception handling
         }
@@ -422,53 +450,5 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             e.printStackTrace();
         }
         alertDialogBuilder.create().show();
-
-    }
-
-    private class HttpRequestTask extends AsyncTask<String, Void, String> {
-        public boolean complete = false;
-
-        @Override
-        protected String doInBackground(String... urls) {
-            complete = false;
-            String url = null;
-            if(urls.length > 0) url = urls[0];
-            String result = null;
-            try {
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpPost request = new HttpPost();
-
-                request.setURI(new URI(url));
-                request.setEntity(new StringEntity(newBook.toString(), "UTF-8"));
-                request.setHeader("Cookie", sessionCookie);
-                request.setHeader("Content-type", "application/json; charset=utf-8");
-
-                HttpResponse response = httpClient.execute(request);
-
-                BufferedReader buff = new BufferedReader(
-                        new InputStreamReader(response.getEntity().getContent())
-                );
-                StringBuffer sbuff = new StringBuffer("");
-
-                String line;
-
-                String NL = System.getProperty("line.separator");
-
-                while ((line = buff.readLine()) != null) {
-                    sbuff.append(line); sbuff.append(NL);
-                }
-
-                buff.close();
-
-                result = sbuff.toString();
-
-            } catch (URISyntaxException | IOException e) {
-                e.printStackTrace(); // TODO more reasonable exception handling
-            }
-
-            httpReqRes = result;
-            complete = true;
-            return result;
-        }
     }
 }
