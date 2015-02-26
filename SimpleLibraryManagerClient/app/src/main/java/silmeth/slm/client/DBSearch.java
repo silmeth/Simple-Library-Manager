@@ -30,6 +30,8 @@ import java.net.URLEncoder;
 
 
 public class DBSearch extends ActionBarActivity {
+    public final int SLMBookId = 0;
+
     private SharedPreferences sharedPref;
     private String localHostName;
 
@@ -75,6 +77,12 @@ public class DBSearch extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Intent i = new Intent(this, MainActivity.class);
+        setResult(RESULT_OK, i);
+        finish();
+    }
+
     // TODO: redundant search functions
     public void btSearchByISBN(View btView) {
         BookInfo[] results = null;
@@ -92,7 +100,7 @@ public class DBSearch extends ActionBarActivity {
         }
         String page = dlBookInfo;
         if(page == null) return;
-        try {
+/*        try {
             JSONArray jsonArray = new JSONArray(page);
             results = new BookInfo[jsonArray.length()];
             for(int i = 0; i < jsonArray.length(); ++i) {
@@ -110,7 +118,11 @@ public class DBSearch extends ActionBarActivity {
         MainActivity.booksArray = results;
         Intent i = new Intent(this, MainActivity.class);
         setResult(RESULT_OK, i);
-        finish();
+        finish(); */
+
+        Intent i = new Intent(this, SLMBookActivity.class);
+        i.putExtra("books", page);
+        startActivityForResult(i, SLMBookId);
     }
 
     public void btSearchByTitle(View btView) {
@@ -129,7 +141,7 @@ public class DBSearch extends ActionBarActivity {
         }
         String page = dlBookInfo;
         if(page == null) return;
-        try {
+        /*try {
             JSONArray jsonArray = new JSONArray(page);
             results = new BookInfo[jsonArray.length()];
             for(int i = 0; i < jsonArray.length(); ++i) {
@@ -148,7 +160,10 @@ public class DBSearch extends ActionBarActivity {
         MainActivity.booksArray = results;
         Intent i = new Intent(this, MainActivity.class);
         setResult(RESULT_OK, i);
-        finish();
+        finish();*/
+        Intent i = new Intent(this, SLMBookActivity.class);
+        i.putExtra("books", page);
+        startActivityForResult(i, SLMBookId);
     }
 
     public void btSearchByAuthor(View btView) {
@@ -167,6 +182,7 @@ public class DBSearch extends ActionBarActivity {
         }
         String page = dlBookInfo;
         if(page == null) return;
+        /*
         try {
             JSONArray jsonArray = new JSONArray(page);
             results = new BookInfo[jsonArray.length()];
@@ -186,7 +202,11 @@ public class DBSearch extends ActionBarActivity {
         MainActivity.booksArray = results;
         Intent i = new Intent(this, MainActivity.class);
         setResult(RESULT_OK, i);
-        finish();
+        finish(); */
+
+        Intent i = new Intent(this, SLMBookActivity.class);
+        i.putExtra("books", page);
+        startActivityForResult(i, SLMBookId);
     }
 
     private class HttpRequestTask extends AsyncTask<String, Void, String> {

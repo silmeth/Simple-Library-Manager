@@ -249,7 +249,11 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
         authorSpinner.setAdapter(authorAdapter);
         authorSpinner.setOnItemSelectedListener(this);
 
-        publisherAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, publishersList);
+        publisherAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                publishersList
+        );
         publisherAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         publisherSpinner.setAdapter(publisherAdapter);
         publisherSpinner.setOnItemSelectedListener(this);
@@ -433,8 +437,9 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             try {
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpPost request = new HttpPost();
+
                 request.setURI(new URI(url));
-                request.setEntity(new StringEntity(newBook.toString()));
+                request.setEntity(new StringEntity(newBook.toString(), "UTF-8"));
                 request.setHeader("Cookie", sessionCookie);
                 request.setHeader("Content-type", "application/json; charset=utf-8");
 

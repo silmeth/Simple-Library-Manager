@@ -61,11 +61,11 @@ def create_book_from_json(json_obj):
                     borrower=None, borrow_date=None, return_date=None)
 
         if 'isbn10' in json_decoded:
-            book.isbn10=json_decoded['isbn10']
+            book.isbn10 = json_decoded['isbn10']
         if 'isbn13' in json_decoded:
-            book.isbn13=json_decoded['isbn13']
+            book.isbn13 = json_decoded['isbn13']
         if 'pub_date' in json_decoded:
-            book.published_year=json_decoded['pub_date']
+            book.published_year = json_decoded['pub_date']
         book.save()
 
     return book
@@ -219,11 +219,12 @@ def add_book(request):
             # book data comes in json through a POST request
             if request.method == 'POST':
                 try:
+                    print(request.body.decode('utf8'))
                     book = create_book_from_json(request.body.decode('utf8'))
                     return HttpResponse(content=create_json_from_books([book]),
                                         content_type='application/json; charset=utf-8')
-                except ValueError: # TODO change to error dict
-                    return HttpResponse(content='error: request not a valid json', content_type='text/plain')
+                except ValueError as err: # TODO change to error dict
+                    return HttpResponse(content='error: request not a valid json\n' + str(err), content_type='text/plain')
             else:
                 return HttpResponse(content='error: something went wrong', content_type='text/plain')
         else:

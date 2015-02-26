@@ -52,4 +52,8 @@
 
     <string name="error">Error!</string>
     <string name="invalid_json">Invalid json format retrieved</string>
+    <string name="title_activity_slmbook">SLM Book</string>
+
+    <string name="bookChoose">Choose a book</string>
+    <string name="btAddNewCopy">Add another copy</string>
 </resources>

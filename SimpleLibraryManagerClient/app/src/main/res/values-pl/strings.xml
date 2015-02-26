@@ -39,5 +39,8 @@
     <string name="user_inactive">Użytkownik nieaktywny</string>
     <string name="wrong_cred">Złe dane (nazwa lub hasło)</string>
     <string name="btLoginMain">Zaloguj</string>
+    <string name="bookChoose">Wybierz książkę</string>
+    <string name="btAddNewCopy">Dodaj kolejny egzemplarz</string>
+    <string name="title_activity_slmbook">Książka SLM</string>
 
 </resources>
