@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -45,7 +44,10 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
     public final int unknownItem = -1;
 
     private SharedPreferences sharedPref;
-    private String localHostName;
+    private String sessionCookie;
+    private Boolean canManageBooks;
+    private String SLMHostName;
+    private String SLMPort;
     private String httpReqRes;
 
     Spinner titleSpinner;
@@ -99,7 +101,10 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
         setContentView(R.layout.activity_addbook);
 
         sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        localHostName = sharedPref.getString("pref_slm_host", "");
+        sessionCookie = sharedPref.getString("session_cookie", "sessionid=null");
+        SLMHostName = sharedPref.getString("pref_slm_host", "");
+        SLMPort = sharedPref.getString("pref_slm_host_port", "");
+        canManageBooks = sharedPref.getBoolean("can_manage_books", false);
 
         titleSpinner = (Spinner) findViewById(R.id.titleSpinner);
         titleEditText = (EditText) findViewById(R.id.titleEditText);
@@ -371,7 +376,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             }
 
             HttpRequestTask httpReqTask = new HttpRequestTask();
-            httpReqTask.execute("http://" + localHostName + ":8000/webs/add_book");
+            httpReqTask.execute("http://" + SLMHostName + ":" + SLMPort + "/webs/add_book");
 
             while(!httpReqTask.complete) {
 
@@ -430,6 +435,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
                 HttpPost request = new HttpPost();
                 request.setURI(new URI(url));
                 request.setEntity(new StringEntity(newBook.toString()));
+                request.setHeader("Cookie", sessionCookie);
                 request.setHeader("Content-type", "application/json; charset=utf-8");
 
                 HttpResponse response = httpClient.execute(request);

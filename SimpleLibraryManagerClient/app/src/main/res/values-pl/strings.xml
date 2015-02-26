@@ -25,5 +25,19 @@
     <string name="entNewPublisher">Wprowadź nowe wydawnictwo</string>
     <string name="entNewTitle">Wprowadź nowy tytuł</string>
     <string name="btConfirm">Zatwierdź</string>
+    <string name="pref_slm_host_port">Port hosta</string>
+    <string name="pref_slm_host_port_summ">Numer portu, na którym nasłuchuje serwer SLM</string>
+    <string name="login_confirm">Zaloguj się</string>
+    <string name="password_name">Hasło</string>
+    <string name="title_activity_login">Logowanie do SLM</string>
+    <string name="username_name">Nazwa użytkownika</string>
+    <string name="connection_timeout">Przekroczony czas połączenia</string>
+    <string name="login_timeout">Nie udało się zalogować, gdyż serwer nie odpowiedział</string>
+    <string name="error">Błąd!</string>
+    <string name="invalid_json">Otrzymano niepoprawny format json</string>
+    <string name="logged_as">Zalogowano jako:</string>
+    <string name="user_inactive">Użytkownik nieaktywny</string>
+    <string name="wrong_cred">Złe dane (nazwa lub hasło)</string>
+    <string name="btLoginMain">Zaloguj</string>
 
 </resources>

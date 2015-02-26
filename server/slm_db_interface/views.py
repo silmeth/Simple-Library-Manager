@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.db import transaction
+from django.db import transaction, connection
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login
 from slm_db_interface.models import Book, Author, Publisher, Borrower, SLMUser
@@ -92,7 +92,7 @@ def compare_3grams(first, second):  # Jaccard's similarity
     return float(intersect)/(len1+len2-intersect)
 
 
-def get_books_by_isbn(request, isbn):
+def get_books_by_isbn(request, isbn): # no login required ATM, may change
     sisbn = str(isbn)
     results = None
     if len(sisbn) == 10:
@@ -102,7 +102,7 @@ def get_books_by_isbn(request, isbn):
     return HttpResponse(content=create_json_from_books(results), content_type='application/json; charset=utf-8')
 
 
-def search(request, attr, attr_val):
+def search(request, attr, attr_val): # no login required ATM, may change
     regexp_whitespace = re.compile('\s+')
     regexp_punctuation = re.compile('[^\w\s]+')
 
@@ -137,88 +137,99 @@ def search(request, attr, attr_val):
 
 
 def search_authors(request, name):
-    regexp_whitespace = re.compile('\s+')
-    regexp_punctuation = re.compile('[^\w\s]+')
+    if request.user.is_authenticated():
+        regexp_whitespace = re.compile('\s+')
+        regexp_punctuation = re.compile('[^\w\s]+')
 
-    name = regexp_whitespace.sub(' ', name.lower())
-    name = regexp_punctuation.sub('', name)
+        name = regexp_whitespace.sub(' ', name.lower())
+        name = regexp_punctuation.sub('', name)
 
-    query_3grams = create_3grams(name)
-    results = []
-    similarities = []
+        query_3grams = create_3grams(name)
+        results = []
+        similarities = []
 
-    for author in Author.objects.all():
-        result = author.name.lower()
+        for author in Author.objects.all():
+            result = author.name.lower()
 
-        result = regexp_whitespace.sub(' ', result)
-        result = regexp_punctuation.sub('', result)
-        result_3grams = create_3grams(result)
-        similarity = compare_3grams(query_3grams, result_3grams)
-        if similarity > 0.21:
-            pos = bisect_left(similarities, similarity, 0, len(similarities))
-            results.insert(pos, author)
-            similarities.insert(pos, similarity)
+            result = regexp_whitespace.sub(' ', result)
+            result = regexp_punctuation.sub('', result)
+            result_3grams = create_3grams(result)
+            similarity = compare_3grams(query_3grams, result_3grams)
+            if similarity > 0.21:
+                pos = bisect_left(similarities, similarity, 0, len(similarities))
+                results.insert(pos, author)
+                similarities.insert(pos, similarity)
 
-    results = results[::-1]
-    similarities = similarities[::-1]
-    json_results_list = []
+        results = results[::-1]
+        similarities = similarities[::-1]
+        json_results_list = []
 
-    for i, res in enumerate(results):
-        json_results_list.append({'name': res.name, 'author_id': res.id, 'similarity': similarities[i]})
+        for i, res in enumerate(results):
+            json_results_list.append({'name': res.name, 'author_id': res.id, 'similarity': similarities[i]})
 
-    json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
+        json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
 
-    return HttpResponse(content=json_results,
-                        content_type='application/json; charset=utf-8')
+        return HttpResponse(content=json_results,
+                            content_type='application/json; charset=utf-8')
+    else:
+        return HttpResponse(content='error: not authenticated', content_type='text/plain') # TODO change to error dict
 
 def search_publishers(request, name):
-    regexp_whitespace = re.compile('\s+')
-    regexp_punctuation = re.compile('[^\w\s]+')
+    if request.user.is_authenticated():
+        regexp_whitespace = re.compile('\s+')
+        regexp_punctuation = re.compile('[^\w\s]+')
 
-    name = regexp_whitespace.sub(' ', name.lower())
-    name = regexp_punctuation.sub('', name)
+        name = regexp_whitespace.sub(' ', name.lower())
+        name = regexp_punctuation.sub('', name)
 
-    query_3grams = create_3grams(name)
-    results = []
-    similarities = []
+        query_3grams = create_3grams(name)
+        results = []
+        similarities = []
 
-    for publisher in Publisher.objects.all():
-        result = publisher.name.lower()
+        for publisher in Publisher.objects.all():
+            result = publisher.name.lower()
 
-        result = regexp_whitespace.sub(' ', result)
-        result = regexp_punctuation.sub('', result)
-        result_3grams = create_3grams(result)
-        similarity = compare_3grams(query_3grams, result_3grams)
-        if similarity > 0.21:
-            pos = bisect_left(similarities, similarity, 0, len(similarities))
-            results.insert(pos, publisher)
-            similarities.insert(pos, similarity)
+            result = regexp_whitespace.sub(' ', result)
+            result = regexp_punctuation.sub('', result)
+            result_3grams = create_3grams(result)
+            similarity = compare_3grams(query_3grams, result_3grams)
+            if similarity > 0.21:
+                pos = bisect_left(similarities, similarity, 0, len(similarities))
+                results.insert(pos, publisher)
+                similarities.insert(pos, similarity)
 
-    results = results[::-1]
-    similarities = similarities[::-1]
-    json_results_list = []
+        results = results[::-1]
+        similarities = similarities[::-1]
+        json_results_list = []
 
-    for i, res in enumerate(results):
-        json_results_list.append({'name': res.name, 'publisher_id': res.id, 'similarity': similarities[i]})
+        for i, res in enumerate(results):
+            json_results_list.append({'name': res.name, 'publisher_id': res.id, 'similarity': similarities[i]})
 
-    json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
+        json_results = json.JSONEncoder(indent=2, ensure_ascii=False).encode(json_results_list)
 
-    return HttpResponse(content=json_results,
-                        content_type='application/json; charset=utf-8')
-
+        return HttpResponse(content=json_results,
+                            content_type='application/json; charset=utf-8')
+    else:
+        return HttpResponse(content='error: not authenticated', content_type='text/plain')
 
 @csrf_exempt
 def add_book(request):
-    # book data comes in json through a POST request
-    if request.method == 'POST':
-        try:
-            book = create_book_from_json(request.body.decode('utf8'))
-            return HttpResponse(content=create_json_from_books([book]),
-                                content_type='application/json; charset=utf-8')
-        except ValueError:
-            return HttpResponse(content='request not a valid json', content_type='text/plain')
+    if request.user.is_authenticated():
+        if request.user.slm_user.can_manage_books:
+            # book data comes in json through a POST request
+            if request.method == 'POST':
+                try:
+                    book = create_book_from_json(request.body.decode('utf8'))
+                    return HttpResponse(content=create_json_from_books([book]),
+                                        content_type='application/json; charset=utf-8')
+                except ValueError: # TODO change to error dict
+                    return HttpResponse(content='error: request not a valid json', content_type='text/plain')
+            else:
+                return HttpResponse(content='error: something went wrong', content_type='text/plain')
+        else:
+            return HttpResponse(content='error: lack of manage book permission')
     else:
-        return HttpResponse(content='something went wrong', content_type='text/plain')
+        return HttpResponse(content='error: not authenticated', content_type='text/plain')
 
 @csrf_exempt
 def log_user_in(request):
@@ -229,11 +240,20 @@ def log_user_in(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return HttpResponse(content='login successful\nlogged as ' + str(user), content_type='text/plain')
-                else:
-                    return HttpResponse(content='user inactive', content_type='text/plain')
+                    resp_json = {'logged_in': True,
+                                 'username': str(user)}
+                    if user.slm_user.can_manage_books:
+                        resp_json['can_manage_books'] = True
+                    if user.slm_user.can_lend:
+                        resp_json['can_lend'] = True
+                    if user.slm_user.can_borrow:
+                        resp_json['can_borrow'] = True
+                    resp = json.JSONEncoder(indent=2, ensure_ascii=False).encode(resp_json)
+                    return HttpResponse(content=resp, content_type='application/json; charset=utf-8')
+                else: # TODO change to error dict
+                    return HttpResponse(content='error: user inactive', content_type='text/plain')
             else:
-                return HttpResponse(content='wrong credentials', content_type='text/plain')
+                return HttpResponse(content='error: wrong credentials', content_type='text/plain')
         except ValueError:
-            return HttpResponse(content='request not a valid json', content_type='text/plain')
+            return HttpResponse(content='error: request not a valid json', content_type='text/plain')
 

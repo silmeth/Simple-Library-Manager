@@ -5,4 +5,10 @@
         android:title="@string/pref_slm_host"
         android:summary="@string/pref_slm_host_summ"
         android:defaultValue="@string/pref_slm_host_default" />
+    <EditTextPreference
+        android:key="pref_slm_host_port"
+        android:title="@string/pref_slm_host_port"
+        android:summary="@string/pref_slm_host_port_summ"
+        android:numeric="integer"
+        android:defaultValue="8080" />
 </PreferenceScreen>

@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Borrower(models.Model):
     """
     Borrower's data, used to
@@ -30,8 +29,10 @@ class SLMUser(models.Model):
     for given user, and with field to refer Django user.
     """
     id = models.AutoField(db_column='slm_user_id', primary_key=True)
-    django_user = models.OneToOneField(User, db_column='django_user_id')  # system uses Django authentication
-    borrower = models.OneToOneField(Borrower, db_column='borrower_id', blank=False, null=True)  # user has to have
+    django_user = models.OneToOneField(User, db_column='django_user_id', related_name='slm_user')
+                                                                                    # system uses Django authentication
+    borrower = models.OneToOneField(Borrower, db_column='borrower_id', blank=False, null=True, related_name='slm_user')
+                                                                                                # user has to have
                                                                                                 # appropriate borrower
     can_borrow = models.BooleanField(default=True)
     can_lend = models.BooleanField(default=False)

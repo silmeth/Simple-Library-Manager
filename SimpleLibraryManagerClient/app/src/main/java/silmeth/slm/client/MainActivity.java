@@ -39,13 +39,17 @@ public class MainActivity extends ActionBarActivity {
     public final int barScanId = 0;
     public final int localSearchId = 1;
     public final int addBookId = 2;
+    public final int loginId = 3;
 
     public static String ISBN;
     private EditText editISBN;
     public static BookInfo[] booksArray;
     public static String dlBookInfo; // downloaded info
+
     private SharedPreferences sharedPref;
     private String localHostName;
+    private Boolean loggedIn;
+    private String sessionCookie;
 //    public static String page = null;
 
     @Override
@@ -58,6 +62,13 @@ public class MainActivity extends ActionBarActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         refreshBookView();
+
+        loggedIn = sharedPref.getBoolean("logged_in", false);
+        sessionCookie = sharedPref.getString("session_cookie", "sessionid=null");
+
+        if(!loggedIn) {
+            btLoginMain(findViewById(R.id.btLoginMain));
+        }
     }
 
     @Override
@@ -96,6 +107,9 @@ public class MainActivity extends ActionBarActivity {
             if(resultCode == RESULT_OK) {
                 refreshBookView();
             }
+        } else if(requestCode == loginId) {
+            loggedIn = sharedPref.getBoolean("logged_in", false);
+            sessionCookie = sharedPref.getString("session_cookie", "sessionid=null");
         }
     }
 
@@ -159,7 +173,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void btAddBook(View btView) {
         Intent i = new Intent(this, AddBook.class);
-        if(booksArray.length > 0) {
+        if(booksArray != null && booksArray.length > 0) {
             if(booksArray[0].title != null) {
                 i.putExtra("titleSearch", searchTitles());
                 i.putExtra("title", booksArray[0].title);
@@ -187,8 +201,19 @@ public class MainActivity extends ActionBarActivity {
             } else if(ISBN != null && ISBN.length() == 13) {
                 i.putExtra("ISBN13", ISBN);
             }
+        } else {
+            if(ISBN != null && ISBN.length() == 10) {
+                i.putExtra("ISBN10", ISBN);
+            } else if(ISBN != null && ISBN.length() == 13) {
+                i.putExtra("ISBN13", ISBN);
+            }
         }
         startActivityForResult(i, addBookId);
+    }
+
+    public void btLoginMain(View btView) {
+        Intent loginInt = new Intent(this, LoginActivity.class);
+        startActivityForResult(loginInt, loginId);
     }
 
     private class HttpRequestTask extends AsyncTask<String, Void, String> {
@@ -204,6 +229,9 @@ public class MainActivity extends ActionBarActivity {
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpGet request = new HttpGet();
                 request.setURI(new URI(url));
+                if(url.contains(localHostName)) {
+                    request.setHeader("Cookie", sessionCookie);
+                }
                 HttpResponse response = httpClient.execute(request);
 
                 BufferedReader buff = new BufferedReader(
