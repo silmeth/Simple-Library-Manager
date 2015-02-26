@@ -173,7 +173,7 @@ public class MainActivity extends ActionBarActivity {
                 i.putExtra("author", booksArray[0].author);
             }
             if(booksArray[0].publisher != null) {
-                i.putExtra("publisherSearch", searchPublishers());
+
                 i.putExtra("publisher", booksArray[0].publisher);
             }
             if(booksArray[0].pubYear != null) {
@@ -198,6 +198,7 @@ public class MainActivity extends ActionBarActivity {
                 i.putExtra("ISBN13", ISBN);
             }
         }
+        i.putExtra("publisherSearch", searchPublishers()); // list all publishers always
         startActivityForResult(i, addBookId);
     }
 
@@ -282,7 +283,7 @@ public class MainActivity extends ActionBarActivity {
 
     // Using first found book if found by Google Books
     public String searchAuthors() {
-        if(booksArray.length > 0) {
+        if(booksArray.length > 0 && booksArray[0].author != null) {
             return search(booksArray[0].author, "_authors/");
         } else {
             return "[ ]"; // empty JSONArray
@@ -291,16 +292,16 @@ public class MainActivity extends ActionBarActivity {
 
     // Using first found book if found by Google Books
     public String searchPublishers() {
-        if(booksArray.length > 0) {
+        if(booksArray.length > 0 && booksArray[0].publisher != null) {
             return search(booksArray[0].publisher, "_publishers/");
         } else {
-            return "[ ]";
+            return search("+", "_publishers/"); // list all publishers anyway
         }
     }
 
     // Using first found book if found by Google Books
     public String searchTitles() {
-        if(booksArray.length > 0) {
+        if(booksArray.length > 0 && booksArray[0].title != null) {
             return search(booksArray[0].title, "/title=");
         } else {
             return "[ ]"; // empty JSONArray

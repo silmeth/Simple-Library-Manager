@@ -196,10 +196,10 @@ def search_publishers(request, name):
             result = regexp_punctuation.sub('', result)
             result_3grams = create_3grams(result)
             similarity = compare_3grams(query_3grams, result_3grams)
-            if similarity > 0.21:
-                pos = bisect_left(similarities, similarity, 0, len(similarities))
-                results.insert(pos, publisher)
-                similarities.insert(pos, similarity)
+#            if similarity > 0.21:  # listing all publishers makes more sense
+            pos = bisect_left(similarities, similarity, 0, len(similarities))
+            results.insert(pos, publisher)
+            similarities.insert(pos, similarity)
 
         results = results[::-1]
         similarities = similarities[::-1]
