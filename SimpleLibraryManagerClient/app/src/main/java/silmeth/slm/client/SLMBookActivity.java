@@ -1,6 +1,7 @@
 package silmeth.slm.client;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -92,10 +93,6 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
         String booksJsonStr = extras.getString("books");
         try {
             JSONArray booksJsonArray = new JSONArray(booksJsonStr);
-            if(booksJsonArray.length() == 0) {
-                setResult(RESULT_CANCELED);
-                finish();
-            }
 
             for(int i = 0; i < booksJsonArray.length(); ++i) {
                 JSONObject bookJson = booksJsonArray.getJSONObject(i);
@@ -135,16 +132,31 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
         bookChooseSpinner.setAdapter(bookChooseAdapter);
         bookChooseSpinner.setOnItemSelectedListener(this);
 
-        title = titlesList.get(0);
-        bookId = bookIdsList.get(0);
-        author = authorsList.get(0);
-        authorId = authorIdsList.get(0);
-        publisher = publishersList.get(0);
-        publisherId = publisherIdsList.get(0);
-        ISBN10 = ISBN10List.get(0);
-        ISBN13 = ISBN13List.get(0);
-        pubYear = pubYearList.get(0);
-        similarity = similaritiesList.get(0);
+        if(titlesList.size() > 0) {
+            title = titlesList.get(0);
+            bookId = bookIdsList.get(0);
+            author = authorsList.get(0);
+            authorId = authorIdsList.get(0);
+            publisher = publishersList.get(0);
+            publisherId = publisherIdsList.get(0);
+            ISBN10 = ISBN10List.get(0);
+            ISBN13 = ISBN13List.get(0);
+            pubYear = pubYearList.get(0);
+            similarity = similaritiesList.get(0);
+        } else {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setCancelable(false);
+            alertDialogBuilder.setTitle(getString(R.string.error));
+            alertDialogBuilder.setMessage(getString(R.string.no_book_found));
+            alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    setResult(RESULT_CANCELED);
+                    finish();
+                }
+            });
+            alertDialogBuilder.create().show();
+        }
 
         refreshBookDetails();
     }

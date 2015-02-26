@@ -42,5 +42,6 @@
     <string name="bookChoose">Wybierz książkę</string>
     <string name="btAddNewCopy">Dodaj kolejny egzemplarz</string>
     <string name="title_activity_slmbook">Książka SLM</string>
+    <string name="no_book_found">Nie znaleziono żadnej książki w bazie SLM</string>
 
 </resources>
