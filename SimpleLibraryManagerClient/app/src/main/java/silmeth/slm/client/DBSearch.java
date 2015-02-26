@@ -30,8 +30,6 @@ public class DBSearch extends ActionBarActivity {
     private TextView ISBNView;
     private EditText queryView;
 
-    private String dlBookInfo;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +75,6 @@ public class DBSearch extends ActionBarActivity {
         finish();
     }
 
-    // TODO: redundant search functions
     public void btSearchByISBN(View btView) {
         String page = search(queryView.getText().toString(), "get_books/isbn/");
         if(page == null) return;
@@ -128,7 +125,7 @@ public class DBSearch extends ActionBarActivity {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
             alertDialogBuilder.create().show();
             e.printStackTrace();
             return null;

@@ -24,8 +24,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.content.Intent;
-import android.widget.EditText;
 import android.widget.TextView;
+
 
 public class MainActivity extends ActionBarActivity {
     public final int barScanId = 0;
@@ -34,16 +34,13 @@ public class MainActivity extends ActionBarActivity {
     public final int loginId = 3;
 
     public static String ISBN;
-    private EditText editISBN;
     public static BookInfo[] booksArray;
-    public static String dlBookInfo; // downloaded info
 
     private SharedPreferences sharedPref;
     private String SLMHostName;
     private String SLMPort;
     private Boolean loggedIn;
     private String sessionCookie;
-//    public static String page = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,14 +117,12 @@ public class MainActivity extends ActionBarActivity {
             List<ResolveInfo> activities = pkgMng.queryIntentActivities(barScanInt, 0);
             if(activities != null && activities.isEmpty()) {
                 // if nothing installed, prompt to install
-                // TODO move strings to xml
                 bcScannerInstalled = false;
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-                alertDialogBuilder.setTitle("Barcode Scanner not installed!");
-                alertDialogBuilder.setMessage("You need to install barcode scanner application to" +
-                        " use this feature. Do you want to install it now?");
+                alertDialogBuilder.setTitle(getString(R.string.barcode_not_installed));
+                alertDialogBuilder.setMessage(getString(R.string.barcode_not_installed_msg));
                 alertDialogBuilder.setCancelable(false);
-                alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                alertDialogBuilder.setPositiveButton(getString(R.string.Yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -137,7 +132,7 @@ public class MainActivity extends ActionBarActivity {
                         startActivity(intent);
                     }
                 });
-                alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                alertDialogBuilder.setNegativeButton(getString(R.string.No), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -211,7 +206,6 @@ public class MainActivity extends ActionBarActivity {
         startActivityForResult(loginInt, loginId);
     }
 
-    // TODO: get rid of all the redundant search functions
     // This should (almost?) always return only one entry:
     // there should exist only one book with given ISBN in the world.
     private BookInfo[] searchGoogleBooks() {

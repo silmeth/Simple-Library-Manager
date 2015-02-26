@@ -2,7 +2,6 @@
 
     <string name="action_settings">Ustawienia</string>
     <string name="app_name">Simple Lib Client</string>
-    <string name="hello_world">Witaj, świecie!</string>
     <string name="pref_slm_host">Nazwa hosta SLM</string>
     <string name="pref_slm_host_summ">URL (adres IP lub domena hosta) serwera z bazą danych SLM</string>
     <string name="title_activity_settings">Ustawienia</string>
@@ -43,5 +42,15 @@
     <string name="btAddNewCopy">Dodaj kolejny egzemplarz</string>
     <string name="title_activity_slmbook">Książka SLM</string>
     <string name="no_book_found">Nie znaleziono żadnej książki w bazie SLM</string>
+    <string name="No">Nie</string>
+    <string name="Yes">Tak</string>
+    <string name="barcode_not_installed">Skaner kodów kreskowych niezainstalowany</string>
+    <string name="barcode_not_installed_msg">Do tej funkcji potrzebny jest skaner kodów kreskowych. Czy chcesz go zainstalować?</string>
+    <string name="generic_timeout_msg">Serwer nie odpowiedział w wyznaczonym czasie</string>
+    <string name="OK">OK</string>
+    <string name="lq">„</string>
+    <string name="rq">”</string>
+    <string name="success">Sukces!</string>
+    <string name="success_added_book">Pomyślnie dodano książkę:</string>
 
 </resources>

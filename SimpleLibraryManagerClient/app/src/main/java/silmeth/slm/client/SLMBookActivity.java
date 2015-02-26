@@ -148,13 +148,15 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
             alertDialogBuilder.setCancelable(false);
             alertDialogBuilder.setTitle(getString(R.string.error));
             alertDialogBuilder.setMessage(getString(R.string.no_book_found));
-            alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    setResult(RESULT_CANCELED);
-                    finish();
-                }
-            });
+            alertDialogBuilder.setPositiveButton(
+                    getString(R.string.OK),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            setResult(RESULT_CANCELED);
+                            finish();
+                        }
+                    });
             alertDialogBuilder.create().show();
         }
 
@@ -262,7 +264,7 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
             alertDialogBuilder.create().show();
             e.printStackTrace();
             return null;

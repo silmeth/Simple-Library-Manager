@@ -407,7 +407,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
                 alertDialogBuilder.setCancelable(true);
                 alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-                alertDialogBuilder.setMessage("Placeholder");
+                alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
                 alertDialogBuilder.create().show();
                 e.printStackTrace();
 
@@ -425,22 +425,25 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             respArray = new JSONArray(httpReqRes);
             JSONObject respObj = respArray.getJSONObject(0);
             if(respObj.getString("title").equals(title)) {
-                alertDialogBuilder.setTitle("Success!");
-                alertDialogBuilder.setMessage("Book " + title + " added successfully.");
-                alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        setResult(RESULT_OK, i);
-                        finish();
-                    }
-                });
+                alertDialogBuilder.setTitle(getString(R.string.success));
+                alertDialogBuilder.setMessage(getString(R.string.success_added_book) +
+                        " " + getString(R.string.lq) + title + getString(R.string.rq));
+                alertDialogBuilder.setPositiveButton(
+                        getString(R.string.OK),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                setResult(RESULT_OK, i);
+                                finish();
+                            }
+                        });
             }
             else throw new JSONException("other");
         } catch(JSONException e) {
-            alertDialogBuilder.setTitle("There was problem");
+            alertDialogBuilder.setTitle(getString(R.string.error));
             alertDialogBuilder.setMessage(httpReqRes);
 
-            alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            alertDialogBuilder.setPositiveButton(getString(R.string.OK), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     setResult(RESULT_CANCELED, i);
