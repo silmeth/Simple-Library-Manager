@@ -32,6 +32,7 @@ public class MainActivity extends ActionBarActivity {
     public final int localSearchId = 1;
     public final int addBookId = 2;
     public final int loginId = 3;
+    public final int settingsId = 4;
 
     public static String ISBN;
     public static BookInfo[] booksArray;
@@ -79,7 +80,7 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent i = new Intent(this, SettingsActivity.class);
-            startActivity(i);
+            startActivityForResult(i, settingsId);
             return true;
         }
 
@@ -87,6 +88,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == barScanId) { // ZXing Barcode Scanner Activity
             if(resultCode == RESULT_OK) {
                 ISBN = data.getStringExtra("SCAN_RESULT");
@@ -101,10 +103,13 @@ public class MainActivity extends ActionBarActivity {
         } else if(requestCode == loginId) {
             loggedIn = sharedPref.getBoolean("logged_in", false);
             sessionCookie = sharedPref.getString("session_cookie", "sessionid=null");
+        } else if(requestCode == settingsId) {
+            SLMHostName = sharedPref.getString("pref_slm_host", "");
+            SLMPort = sharedPref.getString("pref_slm_host_port", "");
         }
     }
 
-    public void BtBarCode(View btView) {
+    public void btBarCode(View btView) {
         boolean bcScannerInstalled = true;
         PackageManager pkgMng = getPackageManager();
         Intent barScanInt = new Intent("com.google.zxing.client.android.SCAN");
@@ -150,8 +155,17 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void btGoogleSearch(View btView) {
-        booksArray = searchGoogleBooks();
-        refreshBookView();
+        try {
+            booksArray = searchGoogleBooks();
+            refreshBookView();
+        } catch(Exception e) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setCancelable(true);
+            alertDialogBuilder.setTitle(getString(R.string.empty_field));
+            alertDialogBuilder.setMessage(R.string.empty_field_msg);
+            alertDialogBuilder.create().show();
+            e.printStackTrace();
+        }
     }
 
     public void btLocalSearch(View btView) {
@@ -161,7 +175,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void btAddBook(View btView) {
-        Intent i = new Intent(this, AddBook.class);
+        Intent i = new Intent(this, BarcodeActivity.class);
+        /*
         i.putExtra("empty", "");
         if(booksArray != null && booksArray.length > 0) {
             if(booksArray[0].title != null) {
@@ -199,6 +214,7 @@ public class MainActivity extends ActionBarActivity {
             }
         }
         i.putExtra("publisherSearch", searchPublishers()); // list all publishers always
+        */
         startActivityForResult(i, addBookId);
     }
 
@@ -209,12 +225,16 @@ public class MainActivity extends ActionBarActivity {
 
     // This should (almost?) always return only one entry:
     // there should exist only one book with given ISBN in the world.
-    private BookInfo[] searchGoogleBooks() {
+    private BookInfo[] searchGoogleBooks() throws Exception {
+        if(ISBN == null || ISBN.isEmpty()) {
+            throw new Exception("No ISBN to parse");
+        }
         BookInfo[] results = null;
         try {
             ISBN = URLEncoder.encode(ISBN, "UTF-8");
         } catch(UnsupportedEncodingException e) {
             e.printStackTrace();
+            throw new Exception(e.getMessage());
         }
         assert(ISBN != null);
 
@@ -233,7 +253,7 @@ public class MainActivity extends ActionBarActivity {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
             alertDialogBuilder.create().show();
             e.printStackTrace();
             return null;
@@ -331,7 +351,7 @@ public class MainActivity extends ActionBarActivity {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-            alertDialogBuilder.setMessage("Placeholder");
+            alertDialogBuilder.setMessage(getString(R.string.slm_timeout_msg));
             alertDialogBuilder.create().show();
             e.printStackTrace();
             return null;

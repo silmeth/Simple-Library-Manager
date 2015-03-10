@@ -70,6 +70,7 @@ public class DBSearch extends ActionBarActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         Intent i = new Intent(this, MainActivity.class);
         setResult(RESULT_OK, i);
         finish();
@@ -118,6 +119,8 @@ public class DBSearch extends ActionBarActivity {
                     "http://" + SLMHostName + ":" + SLMPort + "/webs/" + what + query,
                     sessionCookie
             ).get(2, TimeUnit.SECONDS);
+            if(result[httpReqTask.respStr] == null)
+                throw new TimeoutException("Request returned null");
         } catch(InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch(TimeoutException e) {
@@ -125,7 +128,7 @@ public class DBSearch extends ActionBarActivity {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
             alertDialogBuilder.setCancelable(true);
             alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-            alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
+            alertDialogBuilder.setMessage(getString(R.string.slm_timeout_msg));
             alertDialogBuilder.create().show();
             e.printStackTrace();
             return null;

@@ -64,7 +64,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
 
     EditText ISBN13EditText;
 
-    EditText pubyearEditText;
+    EditText pubYearEditText;
 
     String title = null;
     String author = null;
@@ -113,7 +113,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
 
         ISBN10EditText = (EditText) findViewById(R.id.ISBN10EditText);
         ISBN13EditText = (EditText) findViewById(R.id.ISBN13EditText);
-        pubyearEditText = (EditText) findViewById(R.id.pubyearEditText);
+        pubYearEditText = (EditText) findViewById(R.id.pubYearEditText);
 
         // Initiate Lists for spinners
         titlesList = new ArrayList<>();
@@ -247,7 +247,7 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
             ISBN13EditText.setText(extras.getString("ISBN13"));
         }
         if(extras.getString("pubYear") != null) {
-            pubyearEditText.setText(extras.getString("pubYear"));
+            pubYearEditText.setText(extras.getString("pubYear"));
         }
 
         // Initiate spinners and their adapters
@@ -386,8 +386,8 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
                 newBook.put("isbn10", ISBN10String);
             }
 
-            if(pubyearEditText.getText().toString().length() > 0) {
-                Integer pubYear = Integer.valueOf(pubyearEditText.getText().toString());
+            if(pubYearEditText.getText().toString().length() > 0) {
+                Integer pubYear = Integer.valueOf(pubYearEditText.getText().toString());
                 newBook.put("pub_date", pubYear.intValue());
             }
 
@@ -400,21 +400,25 @@ public class AddBook extends ActionBarActivity implements AdapterView.OnItemSele
                         sessionCookie,
                         "application/json; charset=utf-8"
                 ).get(2, TimeUnit.SECONDS);
+                if(result[httpReqTask.respStr] == null)                  // TODO less ugly handling
+                    throw new TimeoutException("Request returned null"); // of this situation
             } catch(InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                return;
             } catch(TimeoutException e) {
                 httpReqTask.cancel(true);
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
                 alertDialogBuilder.setCancelable(true);
                 alertDialogBuilder.setTitle(getString(R.string.connection_timeout));
-                alertDialogBuilder.setMessage(getString(R.string.generic_timeout_msg));
+                alertDialogBuilder.setMessage(getString(R.string.slm_timeout_msg));
                 alertDialogBuilder.create().show();
                 e.printStackTrace();
-
+                return;
             }
             httpReqRes = (String) result[httpReqTask.respStr];
         } catch(JSONException e) {
             e.printStackTrace(); // TODO better exception handling
+            return;
         }
 
         JSONArray respArray;

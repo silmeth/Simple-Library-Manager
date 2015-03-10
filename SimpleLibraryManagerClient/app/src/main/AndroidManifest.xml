@@ -36,7 +36,7 @@
         </activity>
         <activity
             android:name=".AddBook"
-            android:label="Add new book" >
+            android:label="@string/title_activity_addbook" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="silmeth.slm.client.MainActivity" />
@@ -48,6 +48,13 @@
         <activity
             android:name=".SLMBookActivity"
             android:label="@string/title_activity_slmbook" >
+        </activity>
+        <activity
+            android:name=".BarcodeActivity"
+            android:label="@string/title_activity_barcode" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="silmeth.slm.client.MainActivity" />
         </activity>
     </application>
 

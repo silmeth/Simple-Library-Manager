@@ -89,7 +89,7 @@
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:ems="10"
-        android:id="@+id/pubyearEditText"
+        android:id="@+id/pubYearEditText"
         android:layout_gravity="center_horizontal" />
 
     <Button

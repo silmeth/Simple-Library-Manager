@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 
 
 public class LoginActivity extends ActionBarActivity {
+    public final int settingsId = 0;
+
     private SharedPreferences sharedPref;
     private String SLMHostName;
     private String SLMPort;
@@ -72,11 +74,20 @@ public class LoginActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent i = new Intent(this, SettingsActivity.class);
-            startActivity(i);
+            startActivityForResult(i, settingsId);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == settingsId) {
+            SLMHostName = sharedPref.getString("pref_slm_host", "");
+            SLMPort = sharedPref.getString("pref_slm_host_port", "");
+        }
     }
 
     public void btLoginConfirm(View btView) {

@@ -52,5 +52,11 @@
     <string name="rq">”</string>
     <string name="success">Sukces!</string>
     <string name="success_added_book">Pomyślnie dodano książkę:</string>
+    <string name="empty_field">Puste zapytanie</string>
+    <string name="empty_field_msg">Nie udało się niczego znaleźć, ponieważ zapytanie jest puste</string>
+    <string name="google_timeout_msg">Serwer Google nie odpowiedział w wyznaczonym czasie</string>
+    <string name="slm_timeout_msg">Serwer SLM nie odpowiada w wyznaczonym czasie</string>
+    <string name="title_activity_barcode">Dodaj nową książkę (1)</string>
+    <string name="title_activity_addbook">Dodaj nową książkę (2)</string>
 
 </resources>

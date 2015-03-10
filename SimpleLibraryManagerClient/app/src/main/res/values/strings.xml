@@ -44,6 +44,11 @@
 
     <string name="connection_timeout">Connection timed out</string>
     <string name="generic_timeout_msg">The server has not responded in allowed time</string>
+    <string name="slm_timeout_msg">SLM server does not respond in allowed time</string>
+    <string name="google_timeout_msg">Google Books server has not responded in allowed time</string>
+
+    <string name="empty_field">Empty query</string>
+    <string name="empty_field_msg">Could not find anything, because the query is empty</string>
 
     <string name="login_timeout">Could not log in because server did not respond</string>
     <string name="logged_as">Logged as:</string>
@@ -67,4 +72,6 @@
     <string name="Yes">Yes</string>
     <string name="No">No</string>
     <string name="OK">OK</string>
+    <string name="title_activity_barcode">Add new book (1)</string>
+    <string name="title_activity_addbook">Add new book (2)</string>
 </resources>

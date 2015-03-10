@@ -58,6 +58,7 @@ public class HttpGetRequestTask extends AsyncTask<Object, Void, Object[]> {
 
         } catch (URISyntaxException | IOException e) {
             e.printStackTrace(); // TODO more reasonable exception handling
+                                 // TODO especially ConnectException errors
         }
 
         Object[] returnVal = new Object[Math.max(respObj, respStr)+1];

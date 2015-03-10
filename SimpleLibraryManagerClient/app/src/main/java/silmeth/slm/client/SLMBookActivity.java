@@ -27,7 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SLMBookActivity extends ActionBarActivity implements AdapterView.OnItemSelectedListener {
+public class SLMBookActivity extends ActionBarActivity
+        implements AdapterView.OnItemSelectedListener {
     public final int addBookId = 0;
 
     private SharedPreferences sharedPref;
@@ -187,6 +188,7 @@ public class SLMBookActivity extends ActionBarActivity implements AdapterView.On
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == addBookId) {
 
         }
