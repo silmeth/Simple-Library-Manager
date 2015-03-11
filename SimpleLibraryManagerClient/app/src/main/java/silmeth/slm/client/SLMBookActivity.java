@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -222,9 +223,9 @@ public class SLMBookActivity extends ActionBarActivity
 //        i.putExtra("title", title);
 //        i.putExtra("author", author);
 //        i.putExtra("publisher", publisher);
-        i.putExtra("pubYear", pubYear.toString());
-        i.putExtra("ISBN10", ISBN10);
-        i.putExtra("ISBN13", ISBN13);
+        if(pubYear != null) i.putExtra("pubYear", pubYear.toString());
+        if(ISBN10 != null) i.putExtra("ISBN10", ISBN10);
+        if(ISBN13 != null) i.putExtra("ISBN13", ISBN13);
         i.putExtra("titleSearch", searchTitles());
         i.putExtra("authorSearch", searchAuthors());
         i.putExtra("publisherSearch", searchPublishers());
@@ -259,6 +260,8 @@ public class SLMBookActivity extends ActionBarActivity
                     "http://" + SLMHostName + ":" + SLMPort + "/webs/search" + what + query,
                     sessionCookie
             ).get(2, TimeUnit.SECONDS);
+            if(result[httpReqTask.respStr] == null)
+                throw new TimeoutException("Request returned null");
         } catch(InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch(TimeoutException e) {

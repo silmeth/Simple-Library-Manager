@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Time;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -106,6 +107,8 @@ public class LoginActivity extends ActionBarActivity {
             response = httpReqTask.
                     execute("http://" + SLMHostName + ":" + SLMPort + "/webs/login", credentials).
                     get(2, TimeUnit.SECONDS);
+            if(response == null)
+                throw new TimeoutException("Request returned null");
         } catch(InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch(TimeoutException e) {
@@ -192,7 +195,7 @@ public class LoginActivity extends ActionBarActivity {
         }
     }
 
-    private class HttpRequestTask extends AsyncTask<Object, Void, String> {
+    private class HttpRequestTask extends AsyncTask<Object, Void, String> { // TODO get rid of it
         @Override
         protected String doInBackground(Object... objs) {
             String url = null;
